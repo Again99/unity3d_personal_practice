@@ -1,0 +1,30 @@
+<Save>
+  <CoinNum>2</CoinNum>
+  <PlayerPosX>0.57274</PlayerPosX>
+  <PlayerPosY>0.5</PlayerPosY>
+  <PlayerPosZ>-0.37047</PlayerPosZ>
+  <Coin>
+    <isDead>False</isDead>
+    <CoinPosX>-3.23</CoinPosX>
+    <CoinPosY>0.9</CoinPosY>
+    <CoinPosZ>-4.18</CoinPosZ>
+  </Coin>
+  <Coin>
+    <isDead>True</isDead>
+    <CoinPosX>-3.23</CoinPosX>
+    <CoinPosY>0.9</CoinPosY>
+    <CoinPosZ>2.69</CoinPosZ>
+  </Coin>
+  <Coin>
+    <isDead>True</isDead>
+    <CoinPosX>4.33</CoinPosX>
+    <CoinPosY>0.9</CoinPosY>
+    <CoinPosZ>2.69</CoinPosZ>
+  </Coin>
+  <Coin>
+    <isDead>False</isDead>
+    <CoinPosX>4.33</CoinPosX>
+    <CoinPosY>0.9</CoinPosY>
+    <CoinPosZ>-4.27</CoinPosZ>
+  </Coin>
+</Save>

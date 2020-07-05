@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Xml;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -40,19 +42,23 @@ public class UIManager : MonoBehaviour
     // 游戏保存按钮触发
     public void Save()
     {
-        // Save Data
+        // -- 使用何种方式存储数据 --
+
         //SavePlayerPrefs();
         //SaveSerializes();
-        SaveJsonData();
+        //SaveJsonData();
+        SaveXmlData();
     }
 
     // 游戏加载按钮触发
     public void Load()
     {
-        // Load Data
+        // -- 使用何种方式加载数据 --
+
         //LoadPlayerPrefs();
         //LoadSerializes();
-        LoadJsonData();
+        //LoadJsonData();
+        LoadXmlData();
     }
 
     #region 以PlayerPrefs的方式存储数据
@@ -202,7 +208,7 @@ public class UIManager : MonoBehaviour
 
     private void LoadJsonData()
     {
-        if(File.Exists(Application.dataPath + "/SaveData/save.json"))
+        if (File.Exists(Application.dataPath + "/SaveData/save.json"))
         {
             StreamReader sr = new StreamReader(Application.dataPath + "/SaveData/save.json");
 
@@ -211,6 +217,132 @@ public class UIManager : MonoBehaviour
             LoadSaveObject(save);
 
             sr.Close();
+        }
+        else
+        {
+            Debug.Log("无存档数据");
+        }
+    }
+    #endregion
+
+    #region 以 Xml 的方式存储数据
+    private void SaveXmlData()
+    {
+        // 创建 save 对象和 xml 文档对象
+        Save save = CreateSaveObject();
+        XmlDocument xmlDocument = new XmlDocument();
+
+        #region Xml 存档数据生成
+        XmlElement root = xmlDocument.CreateElement("Save");
+
+        // 金币得分
+        XmlElement CoinNum = xmlDocument.CreateElement("CoinNum");
+        CoinNum.InnerText = save.coin.ToString();
+        root.AppendChild(CoinNum);
+
+        // 玩家位置
+        XmlElement PlayerPosX = xmlDocument.CreateElement("PlayerPosX");
+        XmlElement PlayerPosY = xmlDocument.CreateElement("PlayerPosY");
+        XmlElement PlayerPosZ = xmlDocument.CreateElement("PlayerPosZ");
+
+        PlayerPosX.InnerText = save.playerPosX.ToString();
+        PlayerPosY.InnerText = save.playerPosY.ToString();
+        PlayerPosZ.InnerText = save.playerPosZ.ToString();
+
+        root.AppendChild(PlayerPosX);
+        root.AppendChild(PlayerPosY);
+        root.AppendChild(PlayerPosZ);
+
+        // 各个金币的状态
+        XmlElement Coin, isDead, CoinPosX, CoinPosY, CoinPosZ;
+
+        for (int i = 0; i < coins.Length; i++)
+        {
+            Coin = xmlDocument.CreateElement("Coin");
+            isDead = xmlDocument.CreateElement("isDead");
+            CoinPosX = xmlDocument.CreateElement("CoinPosX");
+            CoinPosY = xmlDocument.CreateElement("CoinPosY");
+            CoinPosZ = xmlDocument.CreateElement("CoinPosZ");
+
+            isDead.InnerText = save.coins[i].isDead.ToString();
+            CoinPosX.InnerText = save.coins[i].x.ToString();
+            CoinPosY.InnerText = save.coins[i].y.ToString();
+            CoinPosZ.InnerText = save.coins[i].z.ToString();
+
+            Coin.AppendChild(isDead);
+            Coin.AppendChild(CoinPosX);
+            Coin.AppendChild(CoinPosY);
+            Coin.AppendChild(CoinPosZ);
+
+            root.AppendChild(Coin);
+        }
+
+        // 添加 root 节点到 xml 文档中
+        xmlDocument.AppendChild(root);
+
+        #endregion
+
+        // 存储 xml 文档到 save.xml 文件中
+        xmlDocument.Save(Application.dataPath + "/SaveData/save.xml");
+
+        if (File.Exists(Application.dataPath + "/SaveData/save.xml"))
+        {
+            Debug.Log("存档成功");
+        }
+    }
+
+    private void LoadXmlData()
+    {
+        if (File.Exists(Application.dataPath + "/SaveData/save.xml"))
+        {
+            // 新建 save 对象
+            Save save = new Save();
+
+            // 读取 save.xml 文件的数据
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(Application.dataPath + "/SaveData/save.xml");
+
+            #region 加载存档数据
+
+            // 加载金币得分
+            save.coin = int.Parse(xmlDocument.GetElementsByTagName("CoinNum")[0].InnerText);
+
+            // 加载玩家位置
+            save.playerPosX = float.Parse(xmlDocument.GetElementsByTagName("PlayerPosX")[0].InnerText);
+            save.playerPosY = float.Parse(xmlDocument.GetElementsByTagName("PlayerPosY")[0].InnerText);
+            save.playerPosZ = float.Parse(xmlDocument.GetElementsByTagName("PlayerPosZ")[0].InnerText);
+
+            XmlNodeList coins = xmlDocument.GetElementsByTagName("Coin");
+
+            if (coins.Count != 0)
+            {
+                for (int i = 0; i < coins.Count; i++)
+                {
+                    CoinState coinState = new CoinState();
+
+                    // 获取各个 Coin 的状态数据
+                    XmlNodeList CoinsPosX = xmlDocument.GetElementsByTagName("CoinPosX");
+                    XmlNodeList CoinsPosY = xmlDocument.GetElementsByTagName("CoinPosY");
+                    XmlNodeList CoinsPosZ = xmlDocument.GetElementsByTagName("CoinPosZ");
+                    XmlNodeList CoinsDead = xmlDocument.GetElementsByTagName("isDead");
+
+                    // 转换坐标位置
+                    coinState.x = float.Parse(CoinsPosX[i].InnerText);
+                    coinState.y = float.Parse(CoinsPosY[i].InnerText);
+                    coinState.z = float.Parse(CoinsPosZ[i].InnerText);
+
+                    // 金币的死亡状态
+                    coinState.isDead = bool.Parse(CoinsDead[i].InnerText);
+
+                    // 添加进 save 的 coins 列表
+                    save.coins.Add(coinState);
+                }
+            }
+            #endregion
+
+            // 加载 save 数据到场景中
+            LoadSaveObject(save);
+
         }
         else
         {
