@@ -9,5 +9,6 @@ Unity3d版本：2019.4.1
 #### 练习说明
 
 1.  Test1 场景是存档功能练习：PlayerPrefs, Serialization, JSON, XML
+2.  Test2 场景是C#委托的练习
 
-#### 作者：WeiCong
+#### 作者：Code0914
